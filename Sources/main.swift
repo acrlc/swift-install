@@ -25,7 +25,7 @@ if let prefix {
   try process(.swift, with: buildArguments)
 
   let outputArguments = ["build"] + defaults + ["--show-bin-path"]
-  let binPath = try output(.swift, outputArguments)
+  let binPath = try output(.swift, with: outputArguments)
   let binFolder = try Folder(path: binPath)
 
   #if os(Linux)
