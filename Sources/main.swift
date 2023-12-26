@@ -2,6 +2,7 @@ import Shell
 
 var prefix: String? = ProcessInfo.processInfo.environment["SWIFTINSTALL"]
 var buildPath: String = ".build"
+var testable: Bool = false
 
 if let prefix {
  do {
@@ -9,13 +10,23 @@ if let prefix {
   var folder = Folder.current
   var inputs = CommandLine.arguments[1...]
 
+  if let argument = inputs.first, argument.hasPrefix("-") {
+   let option = argument.drop(while: { $0 == "-" })
+   switch option {
+   case "t", "testable":
+    testable = true
+    inputs.removeFirst()
+   default:
+    exit(1, "unknown argument at: \(argument)")
+   }
+  }
   if inputs.count > 0, !inputs[0].hasPrefix("-") {
    folder = try Folder(path: inputs.removeFirst())
   }
 
   folder.set()
 
-  let defaults = ["-c", "release", "--build-path", buildPath]
+  let defaults = ["-c", testable ? "debug" : "release", "--build-path", buildPath]
 
   let buildArguments =
    ["build"] + defaults +
