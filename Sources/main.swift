@@ -20,6 +20,7 @@ if let prefix {
     exit(1, "unknown argument at: \(argument)")
    }
   }
+  
   if inputs.count > 0, !inputs[0].hasPrefix("-") {
    folder = try Folder(path: inputs.removeFirst())
   }
@@ -68,14 +69,10 @@ if let prefix {
    if let previous = try? destination.file(named: name) {
     try previous.delete()
    }
-
-   if let previous = try? folder.file(named: name) { try previous.delete() }
-
-   try binary.move(to: folder)
-
-   let moved = try folder.file(named: name)
-   let path = try moved.copy(to: destination)
-
+   
+   try binary.move(to: destination)
+   let path = try destination.file(named: name)
+   
    exit(0, path)
   }
  } catch {
