@@ -20,14 +20,19 @@ if let prefix {
     exit(1, "unknown argument at: \(argument)")
    }
   }
-  
+
   if inputs.count > 0, !inputs[0].hasPrefix("-") {
    folder = try Folder(path: inputs.removeFirst())
   }
 
   folder.set()
 
-  let defaults = ["-c", testable ? "debug" : "release", "--build-path", buildPath]
+  let defaults = [
+   "-c",
+   testable ? "debug" : "release",
+   "--build-path",
+   buildPath
+  ]
 
   let buildArguments =
    ["build"] + defaults +
@@ -37,26 +42,29 @@ if let prefix {
   try process(.swift, with: buildArguments)
 
   let outputArguments = ["build"] + defaults + ["--show-bin-path"]
-  let binPath = try output(.swift, with: outputArguments)
+  let binPath = try processOutput(.swift, with: outputArguments)
   let binFolder = try Folder(path: binPath)
 
   #if os(Linux)
   let hasDot = folder.name.contains(".")
   let binaries =
-   hasDot ? binFolder.files.map { $0 } :
-   binFolder.files.filter { !$0.name.contains(".") }
+   hasDot
+    ? binFolder.files.map { $0 }
+    : binFolder.files.filter { !$0.name.contains(".") }
   #else
   let binaries =
    try binFolder.files.filter { try $0[.contentType] == .unixExecutable }
   #endif
 
   // FIXME: find actual binary name, without fuzzy matching based on folder name
-  if let binary =
+  if
+   let binary =
    binaries.first(
     where: { $0.name.lowercased() == folder.name.lowercased() }
    ) ??
    binaries.compactMap({ file -> (File, [String.Index])? in
-    guard let range =
+    guard
+     let range =
      folder.name.lowercased().fuzzyMatch(file.name.lowercased()),
      range.count > 3
     else { return nil }
@@ -69,10 +77,10 @@ if let prefix {
    if let previous = try? destination.file(named: name) {
     try previous.delete()
    }
-   
+
    try binary.move(to: destination)
    let path = try destination.file(named: name)
-   
+
    exit(0, path)
   }
  } catch {
